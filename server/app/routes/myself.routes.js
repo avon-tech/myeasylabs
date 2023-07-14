@@ -45,11 +45,10 @@ router.put(
                 paramCount++;
             }
 
-            $sql += `, updated = $${paramCount}, updated_user_id = $${
-                paramCount + 1
-            } where id = $${paramCount + 2}`;
+            $sql += `, updated = now(), updated_user_id = $${
+                paramCount
+            } where id = $${paramCount + 1}`;
             params.push(
-                moment().format("YYYY-MM-DD hh:ss"),
                 req.user_id,
                 req.user_id
             );
