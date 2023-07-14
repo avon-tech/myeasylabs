@@ -3,7 +3,6 @@ const { authJwt } = require("../middlewares");
 
 const db = require("../db");
 const bcrypt = require("bcryptjs");
-const moment = require("moment");
 const { errorMessage, successMessage, status } = require("../helpers/status");
 const router = express.Router();
 
