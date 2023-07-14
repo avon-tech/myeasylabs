@@ -27,15 +27,15 @@ app.get("/", (req, res) => {
 });
 
 const baseAPIPath = "/api/v1";
-app.use(baseAPIPath, require("./app/routes/signup.routes"));
-app.use(baseAPIPath, require("./app/routes/login.routes"));
-app.use(baseAPIPath, require("./app/routes/client.routes"));
-app.use(baseAPIPath, require("./app/routes/myself.routes"));
 app.use(baseAPIPath, passwordResetRoutes);
-app.use(baseAPIPath, require("./app/routes/dashboard.routes"));
 app.use(baseAPIPath, require("./app/routes/catalog.routes"));
-app.use(baseAPIPath, require("./app/routes/patient.routes"));
+app.use(baseAPIPath, require("./app/routes/client.routes"));
+app.use(baseAPIPath, require("./app/routes/dashboard.routes"));
+app.use(baseAPIPath, require("./app/routes/login.routes"));
+app.use(baseAPIPath, require("./app/routes/myself.routes"));
 app.use(baseAPIPath, require("./app/routes/order.routes"));
+app.use(baseAPIPath, require("./app/routes/patient.routes"));
+app.use(baseAPIPath, require("./app/routes/signup.routes"));
 
 app.listen(config.port).on("listening", () => {
     console.log(`API is live on ${config.port}`);
