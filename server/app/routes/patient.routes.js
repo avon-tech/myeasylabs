@@ -44,10 +44,12 @@ router.put(
                     set firstname = $1
                     , lastname = $2
                     , email = $3
-                where id = $4
-                and client_id = $5
+                    , updated = now()
+                    , updated_user_id = $4
+                where id = $5
+                and client_id = $6
                 `,
-                [firstname, lastname, email, patient_id, req.client_id]
+                [firstname, lastname, email, req.user_id, patient_id, req.client_id]
             );
             if (!updateResponse.rowCount) {
                 errorMessage.message = "Update Patient not successful";
