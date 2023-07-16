@@ -386,6 +386,7 @@ drop table if exists lab_package;
     create index on lab_package (client_id); --for client search 
 
     insert into lab_package values(1, 1, 'Thyroid Package', now(), 1, now(), 1);
+    insert into lab_package values(2, 1, 'Autoimmune Package', now(), 1, now(), 1);
 
     select setval(pg_get_serial_sequence('lab_package', 'id'), (select max(id) from lab_package)); --fix primary key sequence
     
@@ -408,6 +409,11 @@ drop table if exists lab_package_test;
     insert into lab_package_test values(1, 2, now(), 1);
     insert into lab_package_test values(1, 3, now(), 1);
     insert into lab_package_test values(1, 4, now(), 1);
+
+    insert into lab_package_test values(2, 5, now(), 1);
+    insert into lab_package_test values(2, 6, now(), 1);
+    insert into lab_package_test values(2, 7, now(), 1);
+    insert into lab_package_test values(2, 8, now(), 1);
 
     --alter table lab_package_test add foreign key (lab_package_id) references lab_package(id);
     --alter table lab_package_test add foreign key (lab_company_test_id) references lab_company_test(id);
