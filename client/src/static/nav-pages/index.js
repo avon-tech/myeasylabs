@@ -14,15 +14,15 @@ export const client_pages = [
     },
     {
         id: 2,
-        icon: <ListAltIcon style={{ color: "#FFF", fontSize: "20px" }} />,
-        title: "Catalog",
-        href: "/catalog",
-    },
-    {
-        id: 3,
         icon: <AddchartIcon style={{ color: "#FFF", fontSize: "20px" }} />,
         title: "New Order",
         href: "/new-order",
+    },
+    {
+        id: 3,
+        icon: <ListAltIcon style={{ color: "#FFF", fontSize: "20px" }} />,
+        title: "Catalog",
+        href: "/catalog",
     },
     {
         id: 4,
