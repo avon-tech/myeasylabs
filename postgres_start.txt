@@ -376,6 +376,7 @@ drop table if exists lab_package;
       id serial primary key,
       client_id int,
       name varchar(100),
+      status varchar(100),
       created TIMESTAMP WITHOUT TIME ZONE,
       created_user_id int,
       updated TIMESTAMP WITHOUT TIME ZONE,
@@ -385,8 +386,8 @@ drop table if exists lab_package;
     create unique index on lab_package (lower(name));
     create index on lab_package (client_id); --for client search 
 
-    insert into lab_package values(1, 1, 'Thyroid Package', now(), 1, now(), 1);
-    insert into lab_package values(2, 1, 'Autoimmune Package', now(), 1, now(), 1);
+    insert into lab_package values(1, 1, 'Thyroid Package', 'Active', now(), 1, now(), 1);
+    insert into lab_package values(2, 1, 'Autoimmune Package', 'Inactive', now(), 1, now(), 1);
 
     select setval(pg_get_serial_sequence('lab_package', 'id'), (select max(id) from lab_package)); --fix primary key sequence
     
