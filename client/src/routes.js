@@ -16,6 +16,7 @@ import PatientOrders from "./screens/Patient/PatientOrders";
 import SelectPatient from "./screens/Patient/SelectPatient";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 import AuthGuard from "./components/AuthGuard";
+import LabPackages from "./screens/LabPackages";
 
 export const renderRoutes = (routes = []) => (
     <Switch>
@@ -109,6 +110,13 @@ const routes = [
         layout: DashboardLayout,
         path: "/catalog",
         component: Catalog,
+    },
+    {
+        exact: true,
+        guard: AuthGuard,
+        layout: DashboardLayout,
+        path: "/lab-packages",
+        component: LabPackages,
     },
     {
         exact: true,

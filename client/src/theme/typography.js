@@ -75,18 +75,4 @@ export default {
         color: palette.text.primary,
         fontSize: "14px",
     },
-    caption: {
-        color: palette.text.secondary,
-        fontSize: "11px",
-        letterSpacing: "0.33px",
-        lineHeight: "13px",
-    },
-    overline: {
-        color: palette.text.secondary,
-        fontSize: "11px",
-        fontWeight: 500,
-        letterSpacing: "0.33px",
-        lineHeight: "13px",
-        textTransform: "uppercase",
-    },
 };

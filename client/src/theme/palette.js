@@ -25,12 +25,6 @@ export default {
         main: colors.green[600],
         light: colors.green[400],
     },
-    info: {
-        contrastText: white,
-        dark: colors.blue[900],
-        main: colors.blue[600],
-        light: colors.blue[400],
-    },
     warning: {
         contrastText: white,
         dark: colors.orange[900],
@@ -48,11 +42,7 @@ export default {
         secondary: colors.blueGrey[600],
         link: colors.blue[600],
     },
-    background: {
-        default: white,
-        paper: white,
-    },
-    icon: colors.blueGrey[600],
+
     divider: colors.grey[200],
     borderColor: colors.grey[200],
 };
