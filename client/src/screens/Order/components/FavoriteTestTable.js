@@ -6,19 +6,25 @@ import {
     TableHead,
     IconButton,
 } from "@mui/material";
-
+import { makeStyles } from "@mui/styles";
 import InfoIcon from "@mui/icons-material/InfoOutlined";
 import GradeIcon from "@mui/icons-material/Grade";
 import GradeOutlinedIcon from "@mui/icons-material/GradeOutlined";
-import ModalPopup from "./ModalPopup";
-import DetailModal from "../screens/Catalog/components/DetailModal";
-import { StyledTableCellSm, StyledTableRowSm } from "./common/StyledTable";
-import { makeStyles } from "@mui/styles";
+
+import ModalPopup from "../../../components/ModalPopup";
+import DetailModal from "../../Catalog/components/DetailModal";
+import {
+    StyledTableCellSm,
+    StyledTableRowSm,
+} from "../../../components/common/StyledTable";
 
 const useStyles = makeStyles((theme) => ({
-    border: {
-        border: "1px solid rgba(0, 0, 0, 0.23)",
-        borderRadius: "4px",
+    tableContainer: {
+        overflowY: "scroll",
+        scrollbarWidth: "none",
+        "&::-webkit-scrollbar": {
+            width: 0,
+        },
     },
 
     iconContainer: {
@@ -31,10 +37,19 @@ const useStyles = makeStyles((theme) => ({
     pointer: {
         cursor: "pointer",
     },
+    hoverRow: {
+        "&:hover": {
+            backgroundColor: theme.Colors.border,
+        },
+    },
+    iconButton: {
+        width: "17px",
+        height: "17px",
+    },
 }));
-function TestTable(props) {
+
+function FavoriteTestTable(props) {
     const {
-        isLoading,
         catalog,
         handleFavorite,
         handleShowDetails,
@@ -43,8 +58,8 @@ function TestTable(props) {
     } = props;
     const classes = useStyles();
     return (
-        <TableContainer>
-            <Table stickyHeader size="small">
+        <TableContainer className={classes.tableContainer}>
+            <Table>
                 <TableHead>
                     <StyledTableRowSm>
                         <StyledTableCellSm>Lab Company</StyledTableCellSm>
@@ -56,16 +71,22 @@ function TestTable(props) {
                     </StyledTableRowSm>
                 </TableHead>
                 <TableBody>
-                    {!isLoading && catalog.length > 0 ? (
+                    {catalog.length > 0 ? (
                         catalog.map((item, idx) => (
                             <StyledTableRowSm
                                 key={idx}
-                                onClick={() => handleAddOrder(item)}
+                                className={classes.hoverRow}
                             >
-                                <StyledTableCellSm className={classes.pointer}>
+                                <StyledTableCellSm
+                                    className={classes.pointer}
+                                    onClick={() => handleAddOrder(item)}
+                                >
                                     {item.lab_company_name}
                                 </StyledTableCellSm>
-                                <StyledTableCellSm className={classes.pointer}>
+                                <StyledTableCellSm
+                                    className={classes.pointer}
+                                    onClick={() => handleAddOrder(item)}
+                                >
                                     {item.lab_company_test_name}
                                 </StyledTableCellSm>
                                 <StyledTableCellSm className={classes.pointer}>
@@ -77,6 +98,7 @@ function TestTable(props) {
                                 <StyledTableCellSm>
                                     <IconButton
                                         size="small"
+                                        className={classes.iconButton}
                                         onClick={() =>
                                             handleFavorite(
                                                 item.favorite_id,
@@ -107,7 +129,10 @@ function TestTable(props) {
                                             )
                                         }
                                     >
-                                        <IconButton size="small">
+                                        <IconButton
+                                            size="small"
+                                            className={classes.iconButton}
+                                        >
                                             <InfoIcon fontSize="small" />
                                         </IconButton>
                                     </ModalPopup>
@@ -118,9 +143,7 @@ function TestTable(props) {
                         <StyledTableRowSm>
                             <StyledTableCellSm colSpan={4}>
                                 <Typography align="center" variant="body1">
-                                    {isLoading
-                                        ? "Loading..."
-                                        : "No Records Found..."}
+                                    No Favorites Found
                                 </Typography>
                             </StyledTableCellSm>
                         </StyledTableRowSm>
@@ -131,4 +154,4 @@ function TestTable(props) {
     );
 }
 
-export default TestTable;
+export default FavoriteTestTable;
