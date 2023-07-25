@@ -60,6 +60,7 @@ function Orders(props) {
         handleAddOrder,
         handleSubmitOrder,
         editMode,
+        isEditingDisabled,
     } = props;
     return (
         <Box className={classes.ordersContainer} p={2} ml={2}>
@@ -77,24 +78,26 @@ function Orders(props) {
                         <Typography>Total</Typography>
                         <Typography>&#36;{totalPrice}</Typography>
                     </Box>
-                    <Box className={classes.orderButtons}>
-                        <Button
-                            variant="contained"
-                            className={classes.btnOrder}
-                            onClick={handleSubmitOrder}
-                        >
-                            {editMode
-                                ? "Send Updated Order to Patient"
-                                : "Send  Order To Patient"}
-                        </Button>
-                        <Button
-                            variant="text"
-                            className={classes.btnCancel}
-                            onClick={() => setCancelOrder(true)}
-                        >
-                            Cancel Order
-                        </Button>
-                    </Box>
+                    {!isEditingDisabled && (
+                        <Box className={classes.orderButtons}>
+                            <Button
+                                variant="contained"
+                                className={classes.btnOrder}
+                                onClick={handleSubmitOrder}
+                            >
+                                {editMode
+                                    ? "Send Updated Order to Patient"
+                                    : "Send  Order To Patient"}
+                            </Button>
+                            <Button
+                                variant="text"
+                                className={classes.btnCancel}
+                                onClick={() => setCancelOrder(true)}
+                            >
+                                Cancel Order
+                            </Button>
+                        </Box>
+                    )}
                 </>
             ) : (
                 <p className={classes.orderPlaceholder}>

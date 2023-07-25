@@ -138,6 +138,8 @@ const Order = () => {
     const [editPatient, setEditPatient] = useState(false);
     const [labPackages, setLabPackages] = useState([]);
     const [favoriteOnly, setFavoriteOnly] = useState(false);
+    const [isEditingDisabled, setIsEditingDisable] = useState(false);
+    const isFetching = useRef(false);
 
     const history = useHistory();
     const fetchPatient = async () => {
@@ -150,17 +152,24 @@ const Order = () => {
             setIsLoading(false);
         }
     };
+    const isFetchingOrder = useRef(false);
 
-    const fetchOrder = async (id) => {
-        try {
-            const res = await getOrderItems(id);
-            const totalPriceCalculated = calculateTotalPrice(res.data);
-            setTotalPrice(totalPriceCalculated);
-            setOrders(res.data);
-        } catch (error) {
-            setIsLoading(false);
+    const fetchOrder = useCallback(async (id) => {
+        if (!isFetchingOrder.current) {
+            isFetchingOrder.current = true;
+            try {
+                const res = await getOrderItems(id);
+                const totalPriceCalculated = calculateTotalPrice(res.data);
+                setTotalPrice(totalPriceCalculated);
+                setOrders(res.data);
+                if (res.data[0].status !== "STP") setIsEditingDisable(true);
+            } catch (error) {
+                setIsLoading(false);
+            } finally {
+                isFetchingOrder.current = false;
+            }
         }
-    };
+    }, []);
     async function fetchLabPackages() {
         try {
             setIsLabPackagesLoading(true);
@@ -178,8 +187,9 @@ const Order = () => {
             0
         );
     }
-    const fetchCatalogData = useCallback(
-        async () => {
+    const fetchCatalogData = useCallback(async () => {
+        if (!isFetching.current) {
+            isFetching.current = true;
             setIsLoading(true);
             const reqBody = {
                 data: {
@@ -202,13 +212,10 @@ const Order = () => {
                     );
 
                     newFavorites.forEach((newFavorite) => {
-                        // Check if the new favorite already exists in the updatedFavoriteCatalog
                         const existingFavorite = updatedFavoriteCatalog.find(
                             (item) =>
                                 item.favorite_id === newFavorite.favorite_id
                         );
-
-                        // Add the new favorite only if it doesn't already exist in the favoriteCatalog
                         if (!existingFavorite) {
                             updatedFavoriteCatalog.push(newFavorite);
                         }
@@ -220,11 +227,12 @@ const Order = () => {
                 }
             } catch (error) {
                 setIsLoading(false);
+            } finally {
+                isFetching.current = false;
             }
-        },
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [favoriteOnly, selectedCompanies]
-    );
+    }, [selectedCompanies, favoriteOnly]);
 
     const updateCatalogItem = (labCompanyTestId, favoriteId) => {
         setCatalog((prevCatalog) => {
@@ -263,7 +271,7 @@ const Order = () => {
         history.push("/dashboard");
     };
 
-    useEffectOnce(() => {
+    useEffect(() => {
         fetchCatalogData();
         if (editMode && orders.length === 0) {
             fetchOrder(orderId);
@@ -277,6 +285,7 @@ const Order = () => {
     }, [patientId]);
 
     const handleAddOrder = (item) => {
+        if (isEditingDisabled) return;
         const orderIndex = orders.findIndex(
             (order) =>
                 order.lab_company_test_id === item.lab_company_test_id &&
@@ -334,6 +343,8 @@ const Order = () => {
     };
 
     const handleAddOrders = (items) => {
+        if (isEditingDisabled) return;
+        console.log({ isEditingDisabled });
         let modifiedItems = items.map((item) => ({
             ...item,
             test_price: item.lab_company_test_price,
@@ -458,6 +469,7 @@ const Order = () => {
                                     setCancelOrder={setCancelOrder}
                                     handleAddOrder={handleAddOrder}
                                     handleSubmitOrder={handleSubmitOrder}
+                                    isEditingDisabled={isEditingDisabled}
                                 />
                             </Grid>
                         </Grid>
