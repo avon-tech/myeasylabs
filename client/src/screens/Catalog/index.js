@@ -47,42 +47,46 @@ const Catalog = () => {
 
     const dataFetchRef = useRef(false);
 
-    const fetchCatalogData = useCallback(() => {
-        if (!dataFetchRef.current) {
-            dataFetchRef.current = true;
-            setIsLoading(true);
-            const reqBody = {
-                data: {
-                    text: searchText.trim(),
-                    labCompanyId: selectedCompanies.length
-                        ? selectedCompanies
-                        : null,
-                    favorite: favoriteOnly,
-                },
-            };
-            searchCatalog(reqBody)
-                .then((res) => {
-                    setCatalog(res.data);
-                })
-                .finally(() => {
-                    setIsLoading(false);
-                    dataFetchRef.current = false;
-                })
-                .catch(() => {
-                    setIsLoading(false);
-                    dataFetchRef.current = false;
-                });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedCompanies, favoriteOnly]);
+    const fetchCatalogData = useCallback(
+        (text) => {
+            if (!dataFetchRef.current) {
+                dataFetchRef.current = true;
+                setIsLoading(true);
+                const reqBody = {
+                    data: {
+                        text,
+                        labCompanyId: selectedCompanies.length
+                            ? selectedCompanies
+                            : null,
+                        favorite: favoriteOnly,
+                    },
+                };
+                searchCatalog(reqBody)
+                    .then((res) => {
+                        setCatalog(res.data);
+                    })
+                    .finally(() => {
+                        setIsLoading(false);
+                        dataFetchRef.current = false;
+                    })
+                    .catch(() => {
+                        setIsLoading(false);
+                        dataFetchRef.current = false;
+                    });
+            }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        },
+        [selectedCompanies, favoriteOnly]
+    );
 
     useEffect(() => {
-        fetchCatalogData();
+        fetchCatalogData(searchText);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchCatalogData]);
 
     const onSearch = (e) => {
         e.preventDefault();
-        fetchCatalogData();
+        fetchCatalogData(searchText);
     };
 
     return (

@@ -187,52 +187,56 @@ const Order = () => {
             0
         );
     }
-    const fetchCatalogData = useCallback(async () => {
-        if (!isFetching.current) {
-            isFetching.current = true;
-            setIsLoading(true);
-            const reqBody = {
-                data: {
-                    text: searchText.trim(),
-                    labCompanyId: selectedCompanies.length
-                        ? selectedCompanies
-                        : null,
-                    favorite: favoriteOnly,
-                },
-            };
-            try {
-                const res = await searchCatalog(reqBody);
-                const { data } = res;
+    const fetchCatalogData = useCallback(
+        async (text) => {
+            if (!isFetching.current) {
+                isFetching.current = true;
+                setIsLoading(true);
+                const reqBody = {
+                    data: {
+                        text,
+                        labCompanyId: selectedCompanies.length
+                            ? selectedCompanies
+                            : null,
+                        favorite: favoriteOnly,
+                    },
+                };
+                try {
+                    const res = await searchCatalog(reqBody);
+                    const { data } = res;
 
-                if (data && Array.isArray(data)) {
-                    const updatedFavoriteCatalog = [...favoriteCatalog];
+                    if (data && Array.isArray(data)) {
+                        const updatedFavoriteCatalog = [...favoriteCatalog];
 
-                    const newFavorites = data.filter(
-                        (item) => item.favorite_id !== null
-                    );
-
-                    newFavorites.forEach((newFavorite) => {
-                        const existingFavorite = updatedFavoriteCatalog.find(
-                            (item) =>
-                                item.favorite_id === newFavorite.favorite_id
+                        const newFavorites = data.filter(
+                            (item) => item.favorite_id !== null
                         );
-                        if (!existingFavorite) {
-                            updatedFavoriteCatalog.push(newFavorite);
-                        }
-                    });
 
-                    setFavoriteCatalog(updatedFavoriteCatalog);
-                    setCatalog(data);
+                        newFavorites.forEach((newFavorite) => {
+                            const existingFavorite =
+                                updatedFavoriteCatalog.find(
+                                    (item) =>
+                                        item.favorite_id ===
+                                        newFavorite.favorite_id
+                                );
+                            if (!existingFavorite) {
+                                updatedFavoriteCatalog.push(newFavorite);
+                            }
+                        });
+                        setFavoriteCatalog(updatedFavoriteCatalog);
+                        setCatalog(data);
+                        setIsLoading(false);
+                    }
+                } catch (error) {
                     setIsLoading(false);
+                } finally {
+                    isFetching.current = false;
                 }
-            } catch (error) {
-                setIsLoading(false);
-            } finally {
-                isFetching.current = false;
             }
-        }
+        },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedCompanies, favoriteOnly]);
+        [selectedCompanies, favoriteOnly]
+    );
 
     const updateCatalogItem = (labCompanyTestId, favoriteId) => {
         setCatalog((prevCatalog) => {
@@ -264,7 +268,7 @@ const Order = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        fetchCatalogData();
+        fetchCatalogData(searchText);
     };
 
     const handleGoToDashboard = () => {
@@ -272,7 +276,7 @@ const Order = () => {
     };
 
     useEffect(() => {
-        fetchCatalogData();
+        fetchCatalogData(searchText);
         if (editMode && orders.length === 0) {
             fetchOrder(orderId);
         }
@@ -344,7 +348,6 @@ const Order = () => {
 
     const handleAddOrders = (items) => {
         if (isEditingDisabled) return;
-        console.log({ isEditingDisabled });
         let modifiedItems = items.map((item) => ({
             ...item,
             test_price: item.lab_company_test_price,

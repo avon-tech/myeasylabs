@@ -43,6 +43,13 @@ async function getLabCompanies() {
     return res.data;
 }
 const useStyles = makeStyles((theme) => ({
+    tableContainer: {
+        overflowY: "scroll",
+        scrollbarWidth: "none",
+        "&::-webkit-scrollbar": {
+            width: 0,
+        },
+    },
     border: {
         border: "1px solid rgba(0, 0, 0, 0.23)",
         borderRadius: "4px",
