@@ -9,6 +9,7 @@ import axios from "axios";
 import { API_BASE } from "../../utils/constants";
 import authHeader from "../../utils/helpers";
 import LabAllTestContainer from "../../components/LabAllTestContainer";
+import useEffectOnce from "../../hooks/useEffectOnce";
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -42,16 +43,17 @@ const Catalog = () => {
     const [selectedCompanies, setSelectedCompanies] = useState([]);
     const [favoriteOnly, setFavoriteOnly] = useState(false);
 
-    const dataFetch = useRef(false);
+    // const debouncedSearchTerm = useDebounce(searchText, 500);
 
-    const debouncedSearchTerm = useDebounce(searchText, 500);
+    const dataFetchRef = useRef(false);
 
-    const fetchCatalogData = useCallback(
-        (text) => {
+    const fetchCatalogData = useCallback(() => {
+        if (!dataFetchRef.current) {
+            dataFetchRef.current = true;
             setIsLoading(true);
             const reqBody = {
                 data: {
-                    text,
+                    text: searchText.trim(),
                     labCompanyId: selectedCompanies.length
                         ? selectedCompanies
                         : null,
@@ -61,26 +63,27 @@ const Catalog = () => {
             searchCatalog(reqBody)
                 .then((res) => {
                     setCatalog(res.data);
+                })
+                .finally(() => {
                     setIsLoading(false);
+                    dataFetchRef.current = false;
                 })
                 .catch(() => {
                     setIsLoading(false);
+                    dataFetchRef.current = false;
                 });
-        },
-        [favoriteOnly, selectedCompanies]
-    );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCompanies, favoriteOnly]);
+
+    useEffect(() => {
+        fetchCatalogData();
+    }, [fetchCatalogData]);
 
     const onSearch = (e) => {
         e.preventDefault();
-        fetchCatalogData(debouncedSearchTerm);
+        fetchCatalogData();
     };
-
-    useEffect(() => {
-        if (dataFetch.current) return fetchCatalogData(searchText);
-        dataFetch.current = true;
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [favoriteOnly, selectedCompanies]);
 
     return (
         <Container className={classes.container}>

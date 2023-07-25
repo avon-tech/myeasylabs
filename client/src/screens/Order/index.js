@@ -179,11 +179,11 @@ const Order = () => {
         );
     }
     const fetchCatalogData = useCallback(
-        async (text) => {
+        async () => {
             setIsLoading(true);
             const reqBody = {
                 data: {
-                    text,
+                    text: searchText.trim(),
                     labCompanyId: selectedCompanies.length
                         ? selectedCompanies
                         : null,
@@ -256,24 +256,21 @@ const Order = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        fetchCatalogData(searchText.trim());
+        fetchCatalogData();
     };
 
     const handleGoToDashboard = () => {
         history.push("/dashboard");
     };
-    const dataFetch = useRef(false);
 
-    useEffect(() => {
-        if (dataFetch.current) {
-            fetchCatalogData(searchText);
-            if (editMode && orders.length === 0) {
-                fetchOrder(orderId);
-            }
+    useEffectOnce(() => {
+        fetchCatalogData();
+        if (editMode && orders.length === 0) {
+            fetchOrder(orderId);
         }
-        dataFetch.current = true;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [favoriteOnly, selectedCompanies]);
+    }, [fetchCatalogData]);
+
     useEffectOnce(() => {
         fetchPatient(patientId);
         fetchLabPackages();
