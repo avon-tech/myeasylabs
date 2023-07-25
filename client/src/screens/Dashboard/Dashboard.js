@@ -40,10 +40,15 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: theme.spacing(2) + "!important",
     },
     link: {
-        color: theme.palette.text.primary,
+        color: theme.palette.text.link,
         textDecoration: "none",
         "&:hover": {
             textDecoration: "underline",
+        },
+    },
+    hoverRow: {
+        "&:hover": {
+            backgroundColor: theme.Colors.border,
         },
     },
     searchButton: {
@@ -124,7 +129,7 @@ const Dashboard = () => {
             <TableContainer>
                 <Table size="small">
                     <TableHead>
-                        <TableRow>
+                        <StyledTableRowSm>
                             <StyledTableCellSm>Firstname</StyledTableCellSm>
                             <StyledTableCellSm>Lastname</StyledTableCellSm>
                             <StyledTableCellSm>Status</StyledTableCellSm>
@@ -133,14 +138,14 @@ const Dashboard = () => {
                             <StyledTableCellSm>Edit Order</StyledTableCellSm>
                             <StyledTableCellSm>View Patient</StyledTableCellSm>
                             <StyledTableCellSm>New Order</StyledTableCellSm>
-                        </TableRow>
+                        </StyledTableRowSm>
                     </TableHead>
                     <TableBody>
                         {!isLoading && searchResults.length ? (
                             searchResults.map((item, idx) => (
                                 <StyledTableRowSm
                                     key={idx}
-                                    className={classes.pointer}
+                                    className={classes.hoverRow}
                                 >
                                     <StyledTableCellSm>
                                         {item.firstname}
@@ -152,18 +157,22 @@ const Dashboard = () => {
                                         {item.status}
                                     </StyledTableCellSm>
                                     <StyledTableCellSm>
-                                        {item.created || ""}
+                                        {item.created}
                                     </StyledTableCellSm>
                                     <StyledTableCellSm>
                                         {item.updated}
                                     </StyledTableCellSm>
                                     <StyledTableCellSm>
-                                        <RouterLink
-                                            to={`/patient/${item.patient_id}/edit-order/${item.order_id}`}
-                                            className={classes.link}
-                                        >
-                                            Edit Order 
-                                        </RouterLink>
+                                        {item.status === "Sent To Patient" ? (
+                                            <RouterLink
+                                                to={`/patient/${item.patient_id}/edit-order/${item.order_id}`}
+                                                className={classes.link}
+                                            >
+                                                Edit Order
+                                            </RouterLink>
+                                        ) : (
+                                            <span>Edit Order</span>
+                                        )}
                                     </StyledTableCellSm>
                                     <StyledTableCellSm>
                                         <RouterLink
