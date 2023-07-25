@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme) => ({
         fontWeight: "500 !important",
         color: theme.palette.black + "!important",
         fontSize: "16px !important",
-        maxWidth: "50px",
+        whiteSpace: "nowrap",
     },
     header: {
         display: "flex",
