@@ -232,23 +232,23 @@ router.put(
     async (req, res) => {
         const pgClient = await db.getClient();
         await pgClient.query("BEGIN");
-        const { order_id } = req.body;
+        const { order_id, status: orderStatus } = req.body;
         try {
             pgClient.query(
                 `update orders
-                set status='C'
-                where id = $1
-                and client_id = $2
+                set status=$1
+                where id = $2
+                and client_id = $3
                 `,
-                [order_id, req.client_id]
+                [orderStatus, order_id, req.client_id]
             );
 
             pgClient.query(
                 `update order_item
-                set status='C'
-                where order_id = $1
+                set status=$1 
+                where order_id = $2
                 `,
-                [order_id]
+                [orderStatus, order_id]
             );
             await pgClient.query("COMMIT");
             successMessage.message = "Orders updated successfully";
