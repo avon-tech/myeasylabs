@@ -34,6 +34,7 @@ app.use(baseAPIPath, require("./app/routes/dashboard.routes"));
 app.use(baseAPIPath, require("./app/routes/login.routes"));
 app.use(baseAPIPath, require("./app/routes/myself.routes"));
 app.use(baseAPIPath, require("./app/routes/order.routes"));
+app.use(baseAPIPath, require("./app/routes/packages.routes"));
 app.use(baseAPIPath, require("./app/routes/patient.routes"));
 app.use(baseAPIPath, require("./app/routes/signup.routes"));
 

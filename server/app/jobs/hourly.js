@@ -1,6 +1,6 @@
 /*
 This job sends an email to patients to purchase lab tests
-Test the job from command line: "node ./server/app/jobs/hourly.js"
+Test the job from command line: "node ./app/jobs/hourly.js"
 */
 const nodeCron = require("node-cron");
 const jwt = require("jsonwebtoken");
@@ -72,7 +72,6 @@ const job = nodeCron.schedule("* * * * * *", async () => {
                 "insert into patient_order_notify_log values ($1, current_date)";
             await db.query(notifyQuery, [order_id]);
         });
-
     } catch (error) {
         console.error("Error in cron job: ", error);
     }
