@@ -33,7 +33,7 @@ const MainLayout = ({ children }) => {
                 [classes.shiftContent]: isDesktop,
             })}
         >
-            <Container maxWidth="lg" className={classes.content}>
+            <Container maxWidth="xl" className={classes.content}>
                 {children}
             </Container>
             <Footer />
