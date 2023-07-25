@@ -201,14 +201,16 @@ router.get(
         const { orderId } = req.params;
         try {
             const orderItemsQuery = `
-            select oi.lab_company_test_id
+            select o.status
+            , oi.lab_company_test_id
             , oi.price test_price
             , lct.name lab_company_test_name
             , lc.name lab_company_name
-            from order_item oi
+            from orders o
+            left join order_item oi on oi.order_id = o.id
             left join lab_company_test lct on oi.lab_company_test_id = lct.id
             left join lab_company lc on lc.id = lct.lab_company_id
-            where oi.order_id = $1
+            where o.id = $1
             `;
 
             const orderItemsValues = [orderId];
