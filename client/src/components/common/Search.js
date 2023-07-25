@@ -10,6 +10,7 @@ function Search(props) {
         setSearchText,
         placeholderText,
         inputRef,
+        classNames = "",
     } = props;
     return (
         <form onSubmit={onFormSubmit}>
@@ -18,6 +19,7 @@ function Search(props) {
                 fullWidth
                 inputRef={inputRef}
                 size="small"
+                className={classNames}
                 variant="outlined"
                 placeholder={placeholderText}
                 value={searchText}
