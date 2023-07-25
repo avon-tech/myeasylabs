@@ -14,12 +14,16 @@ export const StyledTableCellLg = withStyles((theme) => ({
 }))(TableCell);
 
 export const StyledTableCellSm = withStyles((theme) => ({
+    root: {
+        borderBottom: "0px !important",
+        padding: theme.spacing(1),
+    },
     head: {
         whiteSpace: "nowrap",
         fontSize: "16px",
         fontWeight: 700 + "!important",
         // padding: "6px 24px 6px 0px",
-        borderBottom: "unset",
+        borderBottom: "0px",
         background: "white",
         color: theme.palette.text.secondary + "!important",
         textAlign: "left",
@@ -38,13 +42,19 @@ export const StyledTableRowSm = withStyles((theme) => ({
         },
         fontSize: 14,
         "& th": {
-            fontSize: 12,
+            fontSize: 13,
             whiteSpace: "nowrap",
+            padding: theme.spacing(1, 1, 0),
+            borderBottom: "0px !important",
         },
         "& td": {
             border: "0px !important",
             fontSize: 12,
+            padding: theme.spacing(1),
             whiteSpace: "nowrap",
+        },
+        "& > th:first-child, & > td:first-child": {
+            paddingLeft: theme.spacing(0),
         },
     },
 }))(TableRow);
