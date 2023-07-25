@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import axios from "axios";
 import { useHistory, useParams, Link as RouterLink } from "react-router-dom";
-import ModelBody from "../../components/common/ModelBody";
+import ModelContainer from "../../components/common/ModelContainer";
 import {
+    Box,
     Breadcrumbs,
     Button,
     Container,
@@ -10,54 +12,30 @@ import {
     Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import TestTable from "../../components/TestTable";
-import Search from "../../components/common/Search";
-import LabCompanies from "../../components/LabCompanies";
+import FavoriteTestTable from "./components/FavoriteTestTable";
 import OrderSuccessModal from "./components/OrderSuccessModal";
 import Orders from "./components/Orders";
 import CancelOrderModal from "./components/CancelOrderModal";
 import useEffectOnce from "../../hooks/useEffectOnce";
-import axios from "axios";
 import { API_BASE } from "../../utils/constants";
 import authHeader from "../../utils/helpers";
+import EditPatientModal from "../Patient/components/EditPatientModal";
+import LabPackagesTable from "../LabPackages/components/LabPackagesTable";
+import LabAllTestContainer from "../../components/LabAllTestContainer";
+import { fetchLabPackagesRequest } from "../LabPackages";
 
 const useStyles = makeStyles((theme) => ({
     container: {
         marginLeft: theme.spacing(2) + "!important",
         width: "100%",
     },
-    customButton: {
-        color: theme.palette.black + " !important",
-        textTransform: "Capitalize !important",
-        borderColor: theme.palette.black + " !important",
-    },
-    buttons: {
-        display: "flex",
-        gap: theme.spacing(3),
-        justifyContent: "center",
-        marginTop: theme.spacing(2),
-    },
-    searchContainer: {
-        display: "flex",
-        justifyContent: "space-between",
-    },
-    border: {
-        border: "1px solid rgba(0, 0, 0, 0.23)",
-        borderRadius: "4px",
-    },
+
     testsContainer: {
         border: "1px solid rgba(0, 0, 0, 0.23)",
         borderRadius: "4px",
         padding: theme.spacing(1, 2),
     },
 
-    filterButton: {
-        padding: theme.spacing(0) + " !important",
-        color: theme.palette.blue + " !important",
-        textTransform: "none !important",
-        fontSize: "12px !important",
-        marginBottom: theme.spacing(1) + " !important",
-    },
     breadcrumbLink: {
         color: "inherit",
         textDecoration: "none",
@@ -71,6 +49,15 @@ const useStyles = makeStyles((theme) => ({
             fontSize: "14px !important",
         },
     },
+    flex: {
+        display: "flex",
+        alignItems: "center",
+    },
+    editButton: {
+        padding: theme.spacing(0) + "!important",
+        textTransform: "none !important",
+        marginLeft: theme.spacing(2) + "!important",
+    },
 }));
 async function searchCatalog(data) {
     const res = await axios.post(`${API_BASE}/catalog/search`, data, {
@@ -78,12 +65,7 @@ async function searchCatalog(data) {
     });
     return res.data;
 }
-async function getLabCompanies() {
-    const res = await axios.get(`${API_BASE}/catalog/lab-companies`, {
-        headers: authHeader(),
-    });
-    return res.data;
-}
+
 async function addFavorite(data) {
     return axios.post(`${API_BASE}/catalog/lab-company/favorite`, data, {
         headers: authHeader(),
@@ -136,6 +118,7 @@ async function getPatientRequest(patientId) {
     });
     return res.data;
 }
+
 const Order = () => {
     const classes = useStyles();
     const { patientId, orderId } = useParams();
@@ -143,18 +126,20 @@ const Order = () => {
     const [catalog, setCatalog] = useState([]);
     const [favoriteCatalog, setFavoriteCatalog] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLabPackagesLoading, setIsLabPackagesLoading] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [searchText, setSearchText] = useState("");
-    const [catalogLabCompanies, setCatalogLabCompanies] = useState([]);
     const [selectedCompanies, setSelectedCompanies] = useState([]);
     const [editMode] = useState(patientId && orderId);
     const [orders, setOrders] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [orderSuccess, setOrderSuccess] = useState(false);
     const [cancelOrder, setCancelOrder] = useState(false);
-    const history = useHistory();
-    const inputRef = useRef(null);
+    const [editPatient, setEditPatient] = useState(false);
+    const [labPackages, setLabPackages] = useState([]);
+    const [favoriteOnly, setFavoriteOnly] = useState(false);
 
+    const history = useHistory();
     const fetchPatient = async () => {
         try {
             setIsLoading(true);
@@ -176,6 +161,16 @@ const Order = () => {
             setIsLoading(false);
         }
     };
+    async function fetchLabPackages() {
+        try {
+            setIsLabPackagesLoading(true);
+            const sortedData = await fetchLabPackagesRequest();
+            setLabPackages(sortedData);
+            setIsLabPackagesLoading(false);
+        } catch (error) {
+            setIsLabPackagesLoading(false);
+        }
+    }
 
     function calculateTotalPrice(data) {
         return data.reduce(
@@ -183,7 +178,6 @@ const Order = () => {
             0
         );
     }
-
     const fetchCatalogData = useCallback(
         async (text) => {
             setIsLoading(true);
@@ -193,6 +187,7 @@ const Order = () => {
                     labCompanyId: selectedCompanies.length
                         ? selectedCompanies
                         : null,
+                    favorite: favoriteOnly,
                 },
             };
             try {
@@ -200,14 +195,27 @@ const Order = () => {
                 const { data } = res;
 
                 if (data && Array.isArray(data)) {
-                    const favoriteCatalogs = data.filter(
+                    const updatedFavoriteCatalog = [...favoriteCatalog];
+
+                    const newFavorites = data.filter(
                         (item) => item.favorite_id !== null
                     );
-                    const normalCatalogs = data.filter(
-                        (item) => item.favorite_id === null
-                    );
-                    setFavoriteCatalog(favoriteCatalogs);
-                    setCatalog(normalCatalogs);
+
+                    newFavorites.forEach((newFavorite) => {
+                        // Check if the new favorite already exists in the updatedFavoriteCatalog
+                        const existingFavorite = updatedFavoriteCatalog.find(
+                            (item) =>
+                                item.favorite_id === newFavorite.favorite_id
+                        );
+
+                        // Add the new favorite only if it doesn't already exist in the favoriteCatalog
+                        if (!existingFavorite) {
+                            updatedFavoriteCatalog.push(newFavorite);
+                        }
+                    });
+
+                    setFavoriteCatalog(updatedFavoriteCatalog);
+                    setCatalog(data);
                     setIsLoading(false);
                 }
             } catch (error) {
@@ -215,20 +223,9 @@ const Order = () => {
             }
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [selectedCompanies]
+        [favoriteOnly, selectedCompanies]
     );
 
-    const fetchLabCompanies = useCallback(async (id) => {
-        setIsLoading(true);
-
-        try {
-            const res = await getLabCompanies();
-            setCatalogLabCompanies(res.data);
-            setIsLoading(false);
-        } catch (error) {
-            setIsLoading(false);
-        }
-    }, []);
     const updateCatalogItem = (labCompanyTestId, favoriteId) => {
         setCatalog((prevCatalog) => {
             return prevCatalog.map((item) => {
@@ -261,24 +258,7 @@ const Order = () => {
         e.preventDefault();
         fetchCatalogData(searchText.trim());
     };
-    const handleSearchClick = () => {
-        if (searchText.trim() !== "") {
-            handleSearch(new Event("submit"));
-        }
-    };
-    const onCheckBoxChangeHandler = (e) => {
-        const tempSelectedCompanies = [...selectedCompanies];
-        if (e.target.checked) {
-            tempSelectedCompanies.push(e.target.name);
-            setSelectedCompanies([...tempSelectedCompanies]);
-        } else {
-            const index = selectedCompanies.findIndex(
-                (x) => x === e.target.name
-            );
-            tempSelectedCompanies.splice(index, 1);
-            setSelectedCompanies([...tempSelectedCompanies]);
-        }
-    };
+
     const handleGoToDashboard = () => {
         history.push("/dashboard");
     };
@@ -293,16 +273,17 @@ const Order = () => {
         }
         dataFetch.current = true;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedCompanies]);
+    }, [favoriteOnly, selectedCompanies]);
     useEffectOnce(() => {
         fetchPatient(patientId);
-
-        fetchLabCompanies();
+        fetchLabPackages();
     }, [patientId]);
 
     const handleAddOrder = (item) => {
         const orderIndex = orders.findIndex(
-            (order) => order.lab_company_test_id === item.lab_company_test_id
+            (order) =>
+                order.lab_company_test_id === item.lab_company_test_id &&
+                order.lab_company_id === item.lab_company_id
         );
 
         let updatedOrders;
@@ -318,14 +299,8 @@ const Order = () => {
             setOrders(updatedOrders);
         }
 
-        // Calculate the total price
         const calculatedTotalPrice = calculateTotalPrice(updatedOrders);
         setTotalPrice(calculatedTotalPrice);
-    };
-    const handleClearFilter = () => {
-        setSelectedCompanies([]);
-        setSearchText("");
-        inputRef.current.focus();
     };
 
     const handleCancelOrder = async () => {
@@ -357,11 +332,37 @@ const Order = () => {
         }
     };
 
+    const handleEditButton = () => {
+        setEditPatient(true);
+    };
+
+    const handleAddOrders = (items) => {
+        let modifiedItems = items.map((item) => ({
+            ...item,
+            test_price: item.lab_company_test_price,
+        }));
+        const filteredItems = modifiedItems.filter(
+            (item) =>
+                !orders.some(
+                    (order) =>
+                        order.lab_company_test_id ===
+                            item.lab_company_test_id &&
+                        order.lab_company_id === item.lab_company_id
+                )
+        );
+
+        const updatedOrders = [...orders, ...filteredItems];
+        setOrders(updatedOrders);
+
+        const calculatedTotalPrice = calculateTotalPrice(updatedOrders);
+        setTotalPrice(calculatedTotalPrice);
+    };
+
     return (
         <>
             {patient && patient.id && (
                 <>
-                    <Container className={classes.container}>
+                    <Container className={classes.container} maxWidth="xl">
                         <Typography
                             component="h5"
                             variant="h5"
@@ -370,6 +371,18 @@ const Order = () => {
                             {editMode ? "Edit Order" : "New Order"} For
                             {` ${patient.firstname} ${patient.lastname}`}
                         </Typography>
+                        <Box className={classes.flex}>
+                            <Typography variant="body2">
+                                {patient.email}
+                            </Typography>
+                            <Button
+                                variant="text"
+                                className={classes.editButton}
+                                onClick={handleEditButton}
+                            >
+                                Edit Patient
+                            </Button>
+                        </Box>
                         <Stack spacing={2} mb={2} mt={1}>
                             <Breadcrumbs
                                 separator="›"
@@ -398,11 +411,8 @@ const Order = () => {
                         <Grid container>
                             <Grid item xs={9}>
                                 <Grid mb={2} className={classes.testsContainer}>
-                                    <Typography variant="h6">
-                                        Favorite Tests
-                                    </Typography>
-                                    <TestTable
-                                        isLoading={isLoading}
+                                    <Typography>Favorite Tests</Typography>
+                                    <FavoriteTestTable
                                         catalog={favoriteCatalog}
                                         handleFavorite={handleFavorite}
                                         handleShowDetails={(item) =>
@@ -412,55 +422,35 @@ const Order = () => {
                                         handleAddOrder={handleAddOrder}
                                     />
                                 </Grid>
+                                <Grid mb={2} className={classes.testsContainer}>
+                                    <Typography>Lab Packages</Typography>
+                                    <LabPackagesTable
+                                        labPackages={labPackages}
+                                        isLoading={isLabPackagesLoading}
+                                        handleClick={(items) =>
+                                            handleAddOrders(items)
+                                        }
+                                    />
+                                </Grid>
                                 <Grid className={classes.testsContainer}>
-                                    <Grid className={classes.searchContainer}>
-                                        <Typography variant="h6">
-                                            All Tests
-                                        </Typography>
-                                        <Search
-                                            placeholderText="Search "
-                                            onFormSubmit={handleSearch}
-                                            handleSearchClick={
-                                                handleSearchClick
-                                            }
-                                            inputRef={inputRef}
-                                            searchText={searchText}
-                                            setSearchText={setSearchText}
-                                        />
-                                    </Grid>
-                                    <Grid container>
-                                        <Grid item xs={3}>
-                                            <Button
-                                                className={classes.filterButton}
-                                                onClick={handleClearFilter}
-                                            >
-                                                Clear All Filters
-                                            </Button>
-                                            <LabCompanies
-                                                catalogLabCompanies={
-                                                    catalogLabCompanies
-                                                }
-                                                selectedCompanies={
-                                                    selectedCompanies
-                                                }
-                                                onCheckBoxChangeHandler={
-                                                    onCheckBoxChangeHandler
-                                                }
-                                            />
-                                        </Grid>
-                                        <Grid item xs={9}>
-                                            <TestTable
-                                                isLoading={isLoading}
-                                                catalog={catalog}
-                                                handleFavorite={handleFavorite}
-                                                handleShowDetails={(item) =>
-                                                    setSelectedItem(item)
-                                                }
-                                                selectedItem={selectedItem}
-                                                handleAddOrder={handleAddOrder}
-                                            />
-                                        </Grid>
-                                    </Grid>
+                                    <LabAllTestContainer
+                                        isTestsLoading={isLoading}
+                                        onSearch={handleSearch}
+                                        selectedCompanies={selectedCompanies}
+                                        setSelectedCompanies={
+                                            setSelectedCompanies
+                                        }
+                                        canAddOrder={true}
+                                        handleAddOrder={(item) =>
+                                            handleAddOrder(item)
+                                        }
+                                        favoriteOnly={favoriteOnly}
+                                        setFavoriteOnly={setFavoriteOnly}
+                                        catalog={catalog}
+                                        setCatalog={setCatalog}
+                                        searchText={searchText}
+                                        setSearchText={setSearchText}
+                                    />
                                 </Grid>
                             </Grid>
                             <Grid item xs={3}>
@@ -481,14 +471,24 @@ const Order = () => {
                         handleCancelOrder={handleCancelOrder}
                     />
 
-                    <ModelBody
+                    <ModelContainer
                         opened={orderSuccess}
                         closeModal={handleGoToDashboard}
                     >
                         <OrderSuccessModal
                             handleGoToDashboard={handleGoToDashboard}
                         />
-                    </ModelBody>
+                    </ModelContainer>
+                    <ModelContainer
+                        opened={editPatient}
+                        closeModal={() => setEditPatient(false)}
+                    >
+                        <EditPatientModal
+                            onClose={() => setEditPatient(false)}
+                            patient={patient}
+                            setPatient={setPatient}
+                        />
+                    </ModelContainer>
                 </>
             )}
         </>
