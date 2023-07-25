@@ -51,11 +51,13 @@ async function validatePatientEmailRequest(data) {
 }
 function NewPatientModal(props) {
     const classes = useStyles();
-    const { onClose } = props;
+    const {
+        onClose,
+        patient: { lastName, firstName, email },
+        setPatient,
+    } = props;
     const history = useHistory();
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
+
     const [fieldErrors, setFieldErrors] = useState([]);
     const { enqueueSnackbar } = useSnackbar();
 
@@ -143,60 +145,76 @@ function NewPatientModal(props) {
         <>
             <ModelHeader onClose={onClose} title="New Patient" />
             <Box className={classes.newPatientContainer}>
-                <TextField
-                    value={firstName}
-                    autoFocus
-                    variant="outlined"
-                    margin="dense"
-                    className={classes.names}
-                    id="firstName"
-                    label="Firstname"
-                    name="firstName"
-                    autoComplete="firstName"
-                    onChange={(event) => setFirstName(event.target.value)}
-                    inputProps={{ maxLength: 35 }}
-                    helperText={`${
-                        firstName.length >= 35
-                            ? "Enter a first name between 35 character"
-                            : ""
-                    }`}
-                />
-                <TextField
-                    value={lastName}
-                    variant="outlined"
-                    margin="dense"
-                    className={classes.names}
-                    id="lastName"
-                    label="Lastname"
-                    name="lastName"
-                    autoComplete="lastName"
-                    onChange={(event) => setLastName(event.target.value)}
-                    inputProps={{ maxLength: 35 }}
-                    helperText={`${
-                        lastName.length >= 35
-                            ? "Enter a last name between 35 character"
-                            : ""
-                    }`}
-                />
-                <TextFieldWithError
-                    id="patientEmail"
-                    fieldName="email"
-                    label="Email"
-                    value={email}
-                    handleOnChange={(event) => setEmail(event.target.value)}
-                    handleOnBlur={(event) =>
-                        handleAjaxValidation(event, "patient")
-                    }
-                    errors={getFieldError("patient", "email")}
-                    inputProps={{ maxLength: 255 }}
-                    helperText={`${
-                        email.length >= 255
-                            ? "Enter an email between 255 character"
-                            : ""
-                    }`}
-                />
-                <Box className={classes.buttons}>
-                    {/*
+                <form onSubmit={(e) => handleSubmit(e, StepEnum.ORDERS)}>
+                    <TextField
+                        value={firstName}
+                        autoFocus
+                        variant="outlined"
+                        margin="dense"
+                        className={classes.names}
+                        id="firstName"
+                        label="Firstname"
+                        name="firstName"
+                        autoComplete="firstName"
+                        onChange={(event) =>
+                            setPatient((prevPatient) => ({
+                                ...prevPatient,
+                                firstName: event.target.value,
+                            }))
+                        }
+                        inputProps={{ maxLength: 35 }}
+                        helperText={`${
+                            firstName.length >= 35
+                                ? "Enter a first name between 35 character"
+                                : ""
+                        }`}
+                    />
+                    <TextField
+                        value={lastName}
+                        variant="outlined"
+                        margin="dense"
+                        className={classes.names}
+                        id="lastName"
+                        label="Lastname"
+                        name="lastName"
+                        autoComplete="lastName"
+                        onChange={(event) =>
+                            setPatient((prevPatient) => ({
+                                ...prevPatient,
+                                lastName: event.target.value,
+                            }))
+                        }
+                        inputProps={{ maxLength: 35 }}
+                        helperText={`${
+                            lastName.length >= 35
+                                ? "Enter a last name between 35 character"
+                                : ""
+                        }`}
+                    />
+                    <TextFieldWithError
+                        id="patientEmail"
+                        fieldName="email"
+                        label="Email"
+                        value={email}
+                        handleOnChange={(event) =>
+                            setPatient((prevPatient) => ({
+                                ...prevPatient,
+                                email: event.target.value,
+                            }))
+                        }
+                        handleOnBlur={(event) =>
+                            handleAjaxValidation(event, "patient")
+                        }
+                        errors={getFieldError("patient", "email")}
+                        inputProps={{ maxLength: 255 }}
+                        helperText={`${
+                            email.length >= 255
+                                ? "Enter an email between 255 character"
+                                : ""
+                        }`}
+                    />
+                    <Box className={classes.buttons}>
+                        {/*
                     <Button
                         variant="outlined"
                         className={classes.customButton}
@@ -205,14 +223,16 @@ function NewPatientModal(props) {
                         Create Patient
                     </Button>
                     */}
-                    <Button
-                        variant="outlined"
-                        className={classes.customButton}
-                        onClick={(e) => handleSubmit(e, StepEnum.ORDERS)}
-                    >
-                        {/*Create Order*/} Continue
-                    </Button>
-                </Box>
+                        <Button
+                            variant="outlined"
+                            type="submit"
+                            disabled={!lastName || !firstName || !email}
+                            className={classes.customButton}
+                        >
+                            {/*Create Order*/} Continue
+                        </Button>
+                    </Box>
+                </form>
             </Box>
         </>
     );
