@@ -3,13 +3,10 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Typography, Container } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 
-import useDebounce from "../../hooks/useDebounce";
-
 import axios from "axios";
 import { API_BASE } from "../../utils/constants";
 import authHeader from "../../utils/helpers";
 import LabAllTestContainer from "../../components/LabAllTestContainer";
-import useEffectOnce from "../../hooks/useEffectOnce";
 
 const useStyles = makeStyles((theme) => ({
     container: {

@@ -206,23 +206,23 @@ const Order = () => {
                     const { data } = res;
 
                     if (data && Array.isArray(data)) {
-                        const updatedFavoriteCatalog = [...favoriteCatalog];
-
-                        const newFavorites = data.filter(
-                            (item) => item.favorite_id !== null
+                        const existingFavoriteIds = favoriteCatalog.map(
+                            (favoriteItem) => favoriteItem.lab_company_test_id
                         );
 
-                        newFavorites.forEach((newFavorite) => {
-                            const existingFavorite =
-                                updatedFavoriteCatalog.find(
-                                    (item) =>
-                                        item.favorite_id ===
-                                        newFavorite.favorite_id
-                                );
-                            if (!existingFavorite) {
+                        const updatedFavoriteCatalog = [...favoriteCatalog];
+
+                        data.forEach((newFavorite) => {
+                            if (
+                                newFavorite.favorite_id !== null &&
+                                !existingFavoriteIds.includes(
+                                    newFavorite.lab_company_test_id
+                                )
+                            ) {
                                 updatedFavoriteCatalog.push(newFavorite);
                             }
                         });
+
                         setFavoriteCatalog(updatedFavoriteCatalog);
                         setCatalog(data);
                         setIsLoading(false);
