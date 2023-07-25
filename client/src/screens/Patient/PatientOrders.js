@@ -9,8 +9,10 @@ import {
     Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import OrderDetails from "../Order/components/OrderDetails";
-import ModelBody from "../../components/common/ModelBody";
+import OrderDetails, {
+    OrderStatusEnum,
+} from "../Order/components/OrderDetails";
+import ModelContainer from "../../components/common/ModelContainer";
 import EditPatientModal from "./components/EditPatientModal";
 import useEffectOnce from "../../hooks/useEffectOnce";
 import { API_BASE } from "../../utils/constants";
@@ -107,14 +109,26 @@ function PatientOrders() {
         patientId && fetchPatientPageData(patientId);
     }, []);
 
-    const cancelOrder = (orderId) => {
+    const cancelOrder = (orderId, status) => {
         const updatedOrders = orders.map((orderGroup) => {
             return orderGroup.map((order) => {
-                if (order.order_id === orderId) {
+                if (
+                    order.order_id === orderId &&
+                    status === OrderStatusEnum.C
+                ) {
                     return {
                         ...order,
                         order_item_status: "Cancelled",
                         order_status: "Cancelled",
+                    };
+                } else if (
+                    order.order_id === orderId &&
+                    status === OrderStatusEnum.STP
+                ) {
+                    return {
+                        ...order,
+                        order_item_status: "Sent To Patient",
+                        order_status: "Sent To Patient",
                     };
                 }
                 return order;
@@ -170,7 +184,7 @@ function PatientOrders() {
                             cancelOrder={cancelOrder}
                         />
                     ))}
-                <ModelBody
+                <ModelContainer
                     opened={editPatient}
                     closeModal={() => setEditPatient(false)}
                 >
@@ -179,7 +193,7 @@ function PatientOrders() {
                         patient={patient}
                         setPatient={setPatient}
                     />
-                </ModelBody>
+                </ModelContainer>
             </Container>
         )
     );

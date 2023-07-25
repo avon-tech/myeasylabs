@@ -25,9 +25,6 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: theme.spacing(2) + "!important",
         width: "100%",
     },
-    pageTitle: {
-        marginBottom: theme.spacing(3) + "!important",
-    },
     orderDetails: {
         border: "1px solid rgba(0, 0, 0, 0.23)",
         borderRadius: "4px",
@@ -51,7 +48,6 @@ const useStyles = makeStyles((theme) => ({
     },
     disabled: {
         pointerEvents: "none",
-        borderColor: theme.palette.divider,
         color: theme.palette.text.secondary,
     },
     orderSummary: {
@@ -77,23 +73,28 @@ async function updateOrderStatusRequest(data) {
     });
     return res.data;
 }
-
+export const OrderStatusEnum = {
+    C: "C",
+    STP: "STP",
+};
 function OrderDetails(props) {
     const classes = useStyles();
     const { orderItems, cancelOrder: updateOrderState, patientId } = props;
     const [cancelOrder, setCancelOrder] = useState(false);
 
-    const handleCancelOrder = async () => {
+    const handleUpdateOrder = async (status) => {
         try {
             await updateOrderStatusRequest({
                 order_id: orderItems[0].order_id,
+                status: status,
             });
-            updateOrderState(orderItems[0].order_id);
+            updateOrderState(orderItems[0].order_id, status);
             setCancelOrder(false);
         } catch (error) {
             setCancelOrder(true);
         }
     };
+
     return (
         <Box className={classes.orderDetails}>
             <Grid container mb={0.5}>
@@ -106,7 +107,11 @@ function OrderDetails(props) {
                         Order ID: <span>{orderItems[0].order_id}</span>
                     </Typography>
                     <Typography>
-                        Created: <span>{orderItems[0].order_created} {orderItems[0].order_created_user}</span>
+                        Created:{" "}
+                        <span>
+                            {orderItems[0].order_created}{" "}
+                            {orderItems[0].order_created_user}
+                        </span>
                     </Typography>
                     <Typography>
                         Updated: <span>{orderItems[0].order_updated}</span>
@@ -116,26 +121,38 @@ function OrderDetails(props) {
                     </Typography>
                 </Grid>
                 <Grid item xs={3.5} className={classes.flex} columnGap={2}>
-                    <RouterLink
-                        to={`/patient/${patientId}/edit-order/${orderItems[0].order_id}`}
-                        className={clsx(
-                            classes.button,
-                            orderItems[0].order_status !== "Sent To Patient" &&
-                                classes.disabled
-                        )}
-                    >
-                        Edit Order
-                    </RouterLink>
-                    <button
-                        className={clsx(
-                            classes.button,
-                            orderItems[0].order_status !== "Sent To Patient" &&
-                                classes.disabled
-                        )}
-                        onClick={() => setCancelOrder(true)}
-                    >
-                        Cancel Order
-                    </button>
+                    {orderItems[0].order_status === "Sent To Patient" ? (
+                        <RouterLink
+                            to={`/patient/${patientId}/edit-order/${orderItems[0].order_id}`}
+                            className={classes.button}
+                        >
+                            Edit Order
+                        </RouterLink>
+                    ) : (
+                        <span
+                            className={clsx(classes.button, classes.disabled)}
+                        >
+                            Edit Order
+                        </span>
+                    )}
+
+                    {orderItems[0].order_status !== "Cancelled" ? (
+                        <button
+                            className={classes.button}
+                            onClick={() => setCancelOrder(true)}
+                        >
+                            Cancel Order
+                        </button>
+                    ) : (
+                        <button
+                            className={classes.button}
+                            onClick={() =>
+                                handleUpdateOrder(OrderStatusEnum.STP)
+                            }
+                        >
+                            UnCancel
+                        </button>
+                    )}
                     <RouterLink
                         to={`/patient/${patientId}/new-order`}
                         className={classes.button}
@@ -183,7 +200,7 @@ function OrderDetails(props) {
             <CancelOrderModal
                 cancelOrder={cancelOrder}
                 setCancelOrder={setCancelOrder}
-                handleCancelOrder={handleCancelOrder}
+                handleCancelOrder={() => handleUpdateOrder(OrderStatusEnum.C)}
             />
         </Box>
     );
