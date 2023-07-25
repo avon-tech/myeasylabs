@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-function ModelBody(props) {
+function ModelContainer(props) {
     const classes = useStyles();
     const { opened, closeModal, children } = props;
     return (
@@ -34,4 +34,4 @@ function ModelBody(props) {
     );
 }
 
-export default ModelBody;
+export default ModelContainer;
