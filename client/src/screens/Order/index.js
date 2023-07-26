@@ -206,24 +206,11 @@ const Order = () => {
                     const { data } = res;
 
                     if (data && Array.isArray(data)) {
-                        const existingFavoriteIds = favoriteCatalog.map(
-                            (favoriteItem) => favoriteItem.lab_company_test_id
+                        const newFavorites = data.filter(
+                            (item) => item.favorite_id !== null
                         );
 
-                        const updatedFavoriteCatalog = [...favoriteCatalog];
-
-                        data.forEach((newFavorite) => {
-                            if (
-                                newFavorite.favorite_id !== null &&
-                                !existingFavoriteIds.includes(
-                                    newFavorite.lab_company_test_id
-                                )
-                            ) {
-                                updatedFavoriteCatalog.push(newFavorite);
-                            }
-                        });
-
-                        setFavoriteCatalog(updatedFavoriteCatalog);
+                        setFavoriteCatalog(newFavorites);
                         setCatalog(data);
                         setIsLoading(false);
                     }
